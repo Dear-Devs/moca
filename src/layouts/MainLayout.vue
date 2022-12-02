@@ -3,7 +3,7 @@
     <q-header elevated class="bg-primary text-white">
       <q-toolbar>
         <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
-        <q-toolbar-title> CODE </q-toolbar-title>
+        <q-toolbar-title> MOCA </q-toolbar-title>
       </q-toolbar>
     </q-header>
 
@@ -17,7 +17,7 @@
             color="orange-13"
             text-color="white"
           >
-            {{ initials }}
+            {{  }}
           </q-avatar>
           <div
             class="text-weight-bold text-center text-white text-h6"
@@ -27,7 +27,7 @@
               style="color: inherit; text-decoration-color: initial"
               :to="{ name: 'profile' }"
             >
-              {{ fullName }}
+              {{  }}
             </router-link>
           </div>
         </div>
@@ -52,7 +52,6 @@
             glossy
             unelevated
             rounded
-            @click="logoutPage()"
           ></q-btn>
         </div>
       </div>
@@ -69,31 +68,29 @@ import { defineComponent, ref } from "vue";
 import EssentialLink from "components/EssentialLink.vue";
 
 const linksList = [
-  {
+{
     title: "Perfil",
     caption: "",
     icon: "account_box",
     link: { name: "profile" },
   },
   {
-    title: "Donaciones",
+    title: "Checar entrada y salida",
     caption: "",
-    icon: "volunteer_activism",
-    link: "",
-    sub_items: [
-      {
-        title: "Pendientes",
-        caption: "",
-        icon: "pending_actions",
-        link: { name: "donations" },
-      },
-      {
-        title: "Realizadas",
-        caption: "",
-        icon: "assignment_turned_in",
-        link: { name: "donations" },
-      },
-    ],
+    icon: "check",
+    link: { name: "check-input-output" },
+  },
+  {
+    title: "Lista de asistencias",
+    caption: "",
+    icon: "format_list_bulleted",
+    link: { name: "attendance-list" },
+  },
+  {
+    title: "Lista de empleados",
+    caption: "",
+    icon: "groups",
+    link: { name: "employees-list" },
   },
 ];
 

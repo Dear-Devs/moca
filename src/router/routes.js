@@ -14,6 +14,29 @@ const routes = [
         name: "edit-profile",
         component: () => import("pages/EditProfilePage.vue"),
       },
+
+      {
+        path: "check-input-output",
+        name: "check-input-output",
+        component: () => import("pages/CheckInputOutput.vue"),
+      },
+
+      {
+        path: "attendance-list",
+        name: "attendance-list",
+        component: () => import("pages/AttendanceList.vue"),
+      },
+      {
+        path: "employees-list",
+        name: "employees-list",
+        component: () => import("pages/EmployeesList.vue"),
+      },
+
+      {
+        path: "attendance-detail",
+        name: "attendance-detail",
+        component: () => import("pages/AttendanceDetail.vue"),
+      },
     ],
   },
 
@@ -22,6 +45,11 @@ const routes = [
   {
     path: "/:catchAll(.*)*",
     component: () => import("pages/ErrorNotFound.vue"),
+  },
+  {
+    path: "/login",
+    name: "login",
+    component: () => import("pages/LoginPage.vue"),
   },
 
 ];

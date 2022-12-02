@@ -1,9 +1,8 @@
 <template>
-  <img src="../assets/wave.png" class="wave" alt="login-wave" />
+  <img  class="wave" alt="login-wave" />
   <div class="row" style="height: 90vh">
     <div class="col-0 col-md-6 flex justify-center content-center">
       <img
-        src="../assets/cesta-de-comida.png"
         class="responsive"
         alt="login-image"
       />
