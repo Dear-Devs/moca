@@ -2,6 +2,9 @@ const routes = [
   {
     path: "/",
     component: () => import("layouts/MainLayout.vue"),
+    meta: {
+      requiresAuth: true,
+    },
     children: [
       { path: "", component: () => import("pages/IndexPage.vue") },
       {
@@ -50,8 +53,10 @@ const routes = [
     path: "/login",
     name: "login",
     component: () => import("pages/LoginPage.vue"),
+    meta: {
+      requiresAuth: false,
+    },
   },
-
 ];
 
 export default routes;

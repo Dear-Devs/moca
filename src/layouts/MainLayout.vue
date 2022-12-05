@@ -17,7 +17,7 @@
             color="orange-13"
             text-color="white"
           >
-            {{  }}
+            {{}}
           </q-avatar>
           <div
             class="text-weight-bold text-center text-white text-h6"
@@ -27,7 +27,7 @@
               style="color: inherit; text-decoration-color: initial"
               :to="{ name: 'profile' }"
             >
-              {{  }}
+              {{}}
             </router-link>
           </div>
         </div>
@@ -68,7 +68,7 @@ import { defineComponent, ref } from "vue";
 import EssentialLink from "components/EssentialLink.vue";
 
 const linksList = [
-{
+  {
     title: "Perfil",
     caption: "",
     icon: "account_box",
@@ -114,10 +114,7 @@ export default defineComponent({
       },
     };
   },
-  methods: {
-
-  },
-  mounted() {
-  },
+  methods: {},
+  mounted() {},
 });
 </script>
