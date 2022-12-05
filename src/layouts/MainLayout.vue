@@ -17,7 +17,7 @@
             color="orange-13"
             text-color="white"
           >
-            {{}}
+            {{ initials }}
           </q-avatar>
           <div
             class="text-weight-bold text-center text-white text-h6"
@@ -27,7 +27,7 @@
               style="color: inherit; text-decoration-color: initial"
               :to="{ name: 'profile' }"
             >
-              {{}}
+              {{ fullName }}
             </router-link>
           </div>
         </div>
@@ -52,6 +52,7 @@
             glossy
             unelevated
             rounded
+            @click="logoutPage"
           ></q-btn>
         </div>
       </div>
@@ -66,6 +67,7 @@
 <script>
 import { defineComponent, ref } from "vue";
 import EssentialLink from "components/EssentialLink.vue";
+import { logout, userProfile } from "/src/api/auth.js";
 
 const linksList = [
   {
@@ -114,7 +116,40 @@ export default defineComponent({
       },
     };
   },
-  methods: {},
-  mounted() {},
+  methods: {
+    logoutPage() {
+      logout();
+      this.$api.defaults.headers.common["Authorization"] = ``;
+      sessionStorage.clear();
+      this.$noti(true, "Se ha cerrado la sesión correctamente");
+      this.$router.push("/login");
+    },
+
+    async getPersonalInfo() {
+      // Check if the name exists in sessionStorage
+      const name = sessionStorage.getItem("name");
+
+      if (!name) {
+        const res = await userProfile();
+
+        if (res.status) {
+          this.fullName = `${res.data.name} ${res.data.first_surname}${
+            res.data.second_surname ? " " + res.data.second_surname : ""
+          }`;
+
+          sessionStorage.setItem("name", this.fullName);
+        } else {
+          this.fullName = "Generic Name";
+        }
+      } else {
+        this.fullName = name;
+      }
+
+      this.initials = this.fullName.substring(0, 2);
+    },
+  },
+  mounted() {
+    this.getPersonalInfo();
+  },
 });
 </script>
