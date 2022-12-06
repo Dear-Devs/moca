@@ -1,6 +1,7 @@
 class Camera {
   constructor(videoNode) {
     this._videoNode = videoNode;
+    this._stream = this._photo = null;
   }
 
   isPowerOn() {

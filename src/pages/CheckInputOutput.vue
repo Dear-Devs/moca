@@ -4,7 +4,7 @@
     <div class="q-my-md text-center text-h5" v-text="actualHour"></div>
 
     <div class="row q-my-md text-center">
-      <div class="col-12 col-md-6 column">
+      <div class="col-12 column">
         <div class="col col-auto self-center">
           <!-- Botón para mostrar la cámara -->
           <q-btn
@@ -42,30 +42,6 @@
           ></video>
         </div>
       </div>
-      <div class="col-12 col-md-6" v-bind:class="imgClasses">
-        <div class="col col-auto self-center text-center">
-          <q-img
-            :src="attendance.url_photo"
-            :ratio="1"
-            class="q-mt-md"
-            style="width: 300px"
-          >
-            <template v-slot:error>
-              <div style="width: 300px" class="bg-blue-grey-4 text-center">
-                <q-avatar
-                  square
-                  size="200px"
-                  font-size="6rem"
-                  color="blue-grey-4"
-                  text-color="white"
-                  icon="hide_image"
-                />
-                <p class="text-white text-h6">No photo uploaded!</p>
-              </div>
-            </template>
-          </q-img>
-        </div>
-      </div>
     </div>
     <div class="row q-my-md text-center">
       <div class="col-12 column">
@@ -78,11 +54,12 @@
     <div class="q-my-md flex justify-around">
       <q-btn
         color="primary"
-        label="Check"
-        icon="keyboard_return"
+        :label="idAttendance ? 'Check out' : 'Check in'"
+        :icon="idAttendance ? 'logout' : 'login'"
         glossy
         unelevated
         rounded
+        @click="saveAttendance"
       />
     </div>
   </q-page>
@@ -90,9 +67,11 @@
 
 <script>
 import { ref, reactive } from "vue";
+import { date, useQuasar } from "quasar";
 import { Camera } from "/src/api/Camera.js";
 import { createMap } from "/src/api/OpenLayer.js";
-import { date } from "quasar";
+import { addToCollection, getPendingAttendance } from "/src/api/firestore.js";
+import { saveImageBase64 } from "/src/api/firebase.js";
 
 export default {
   name: "CheckInputOutput",
@@ -101,50 +80,39 @@ export default {
     const userLogged = JSON.parse(sessionStorage.getItem("user"));
 
     return {
-      actualHour: ref(new Date()),
+      $q: useQuasar(),
+      userLogged,
+      base64Str: "",
+      actualHour: ref(""),
       timer: ref(null),
       cameraRef: ref(null),
-      facingMode: "enviroment",
+      facingMode: "environment",
+      idAttendance: ref(null),
+      lat: ref(0),
+      lng: ref(0),
       attendance: reactive({
-        showImage: ref(true),
         name: userLogged.name,
         first_surname: userLogged.first_surname,
         second_surname: userLogged.second_surname,
-        company: userLogged.company,
-        role: userLogged.role,
-        employee: userLogged.employee,
+        employee_id: userLogged.employee.id,
+        // company: userLogged.company,
+        // role: userLogged.role,
+        // employee: userLogged.employee,
         employee_status: userLogged.employeeStatus,
-        url_photo: ref("bad_url.jpg"),
-        lat: ref(""),
-        lng: ref(""),
-        check_in_date: ref(""),
-        check_out_date: ref(""),
+        check_in: {
+          url_photo: ref("bad_url.jpg"),
+          lat: ref(""),
+          lng: ref(""),
+          date: ref(""),
+        },
+        check_out: {
+          url_photo: ref("bad_url.jpg"),
+          lat: ref(""),
+          lng: ref(""),
+          date: ref(""),
+        },
       }),
     };
-  },
-
-  computed: {
-    videoClasses: function () {
-      return {
-        hidden: this.attendance.showImage || this.cameraRef == null,
-      };
-    },
-    imgClasses: function () {
-      return [
-        {
-          hidden:
-            !this.attendance.showImage ||
-            !(
-              this.cameraRef == null ||
-              !this.cameraRef.isPowerOn() ||
-              this.cameraRef.isPhotoTaken()
-            ),
-        },
-      ];
-    },
-    actualTime: function () {
-      return date.formatDate(Date.now(), "HH:mm:ss");
-    },
   },
 
   methods: {
@@ -156,7 +124,7 @@ export default {
       }
 
       if (!this.cameraRef.isPowerOn()) {
-        let status = await this.cameraRef.power();
+        let status = await this.cameraRef.power(this.facingMode);
         this.$noti(
           status,
           status ? "The camera is turned on!" : "An error has occurred."
@@ -182,6 +150,43 @@ export default {
     setDateTime() {
       this.actualHour = date.formatDate(Date.now(), "HH:mm:ss");
     },
+
+    async saveAttendance(event) {
+      this.$q.loading.show();
+
+      const typeCheck = !this.idAttendace ? "check_in" : "check_out";
+      let folderAttendance = `attendance/employee${
+        this.userLogged.id
+      }/${Date.now()}.jpg`;
+      const respImage = await saveImageBase64(folderAttendance, this.base64Str);
+
+      if (!respImage.status) {
+        this.$q.loading.hide();
+        this.$noti(false, "An error has occurred.");
+        return;
+      }
+
+      this.attendance[typeCheck].url_photo = respImage.data;
+      this.attendance[typeCheck].date = new Date();
+      this.attendance[typeCheck].lat = this.lat;
+      this.attendance[typeCheck].lng = this.lng;
+
+      const respAdd = await addToCollection("attendance", this.attendance);
+
+      console.log(respAdd);
+
+      if (respAdd.status) {
+        this.cameraRef = new Camera(this.$refs.videoCameraRef);
+        await this.cameraRef.power(this.facingMode);
+      }
+
+      this.$noti(
+        respAdd.status,
+        respAdd.status ? "Successful load" : "An error has occurred"
+      );
+
+      this.$q.loading.hide();
+    },
   },
 
   beforeMount() {
@@ -193,12 +198,33 @@ export default {
 
   async mounted() {
     navigator.geolocation.getCurrentPosition((position) => {
+      this.lat = position.coords.latitude;
+      this.lng = position.coords.longitude;
+
       const map = createMap(
         this.$refs.map,
         position.coords.latitude,
         position.coords.longitude
       );
     });
+
+    const respPending = await getPendingAttendance(this.userLogged.employee.id);
+
+    console.log(respPending);
+
+    if (respPending.status) {
+      this.idAttendance = respPending.data.id;
+
+      this.attendance.check_in.url_photo =
+        respPending.data.data.check_in.url_photo;
+      this.attendance.check_in.date =
+        respPending.data.data.check_in.date.toDate();
+      this.attendance.check_in.lat = respPending.data.data.check_in.lat;
+      this.attendance.check_in.lng = respPending.data.data.check_in.lng;
+    }
+
+    this.cameraRef = new Camera(this.$refs.videoCameraRef);
+    await this.cameraRef.power(this.facingMode);
   },
 };
 </script>
