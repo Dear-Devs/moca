@@ -1,11 +1,18 @@
 <template>
   <img src="../assets/wave.png" class="wave" alt="login-wave" />
   <div class="row" style="height: 90vh">
+    <div class="col-0 col-md-6 flex justify-center content-center">
+      <img
+        src="../assets/lista.png"
+        class="responsive"
+        alt="login-image"
+      />
+    </div>
     <div
       v-bind:class="{
         'justify-center': $q.screen.md || $q.screen.sm || $q.screen.xs,
       }"
-      class="offset-4 col-8 flex content-center"
+      class="col-12 col-md-6 flex content-center"
     >
       <q-card
         v-bind:style="$q.screen.lt.sm ? { width: '80%' } : { width: '50%' }"
@@ -30,7 +37,13 @@
         </q-card-section>
         <q-card-section>
           <q-form class="q-gutter-md">
-            <q-input label="Email" rounded outlined dense v-model="user.email">
+            <q-input
+              label="Username"
+              rounded
+              outlined
+              dense
+              v-model="user.email"
+            >
             </q-input>
             <q-input
               label="Password"
@@ -46,8 +59,8 @@
                 class="full-width"
                 color="primary"
                 label="Login"
+                @click="sesion()"
                 rounded
-                @click="sesion"
               ></q-btn>
             </div>
           </q-form>
