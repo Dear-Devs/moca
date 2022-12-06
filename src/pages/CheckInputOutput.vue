@@ -1,6 +1,9 @@
 <template>
   <q-page class="container">
-    <div class="q-my-md text-center text-h4">Time</div>
+    <div
+      class="q-my-md text-center text-h4"
+      v-text="idAttendance != null ? 'Check out time' : 'Check in time'"
+    ></div>
     <div class="q-my-md text-center text-h5" v-text="actualHour"></div>
 
     <div class="row q-my-md text-center">
@@ -30,10 +33,7 @@
             @click="switchCamera"
           />
         </div>
-        <div
-          class="col self-center text-center column"
-          v-bind:class="videoClasses"
-        >
+        <div class="col self-center text-center column">
           <video
             ref="videoCameraRef"
             class="col self-center q-my-md"
@@ -49,6 +49,14 @@
           <div ref="map" style="width: 300px; height: 300px"></div>
         </div>
       </div>
+    </div>
+
+    <div
+      v-if="idAttendance != null"
+      class="q-my-lg text-center text-caption text-warning text-weight-bolder"
+      style="font-size: 25px"
+    >
+      Check in time: {{ date.formatDate(attendance.check_in.date, "HH:mm:ss") }}
     </div>
 
     <div class="q-my-md flex justify-around">
@@ -80,6 +88,7 @@ export default {
     const userLogged = JSON.parse(sessionStorage.getItem("user"));
 
     return {
+      date,
       $q: useQuasar(),
       userLogged,
       base64Str: "",
@@ -94,19 +103,19 @@ export default {
         name: userLogged.name,
         first_surname: userLogged.first_surname,
         second_surname: userLogged.second_surname,
-        employee_id: userLogged.employee.id,
+        employee_id: userLogged.employee.user_id,
         // company: userLogged.company,
         // role: userLogged.role,
         // employee: userLogged.employee,
         employee_status: userLogged.employeeStatus,
         check_in: {
-          url_photo: ref("bad_url.jpg"),
+          url_photo: ref("https://www.some-page.com/bad_url.jpg"),
           lat: ref(""),
           lng: ref(""),
           date: ref(""),
         },
         check_out: {
-          url_photo: ref("bad_url.jpg"),
+          url_photo: ref("https://www.some-page.com/bad_url.jpg"),
           lat: ref(""),
           lng: ref(""),
           date: ref(""),
@@ -121,9 +130,11 @@ export default {
 
       if (this.cameraRef == null) {
         this.cameraRef = new Camera(this.$refs.videoCameraRef);
+        this.base64Str = null;
       }
 
       if (!this.cameraRef.isPowerOn()) {
+        this.base64Str = null;
         let status = await this.cameraRef.power(this.facingMode);
         this.$noti(
           status,
@@ -154,7 +165,13 @@ export default {
     async saveAttendance(event) {
       this.$q.loading.show();
 
-      const typeCheck = !this.idAttendace ? "check_in" : "check_out";
+      if (!this.base64Str) {
+        this.$q.loading.hide();
+        this.$noti(false, "You need take a photo!");
+        return;
+      }
+
+      const typeCheck = !this.idAttendance ? "check_in" : "check_out";
       let folderAttendance = `attendance/employee${
         this.userLogged.id
       }/${Date.now()}.jpg`;
@@ -171,13 +188,59 @@ export default {
       this.attendance[typeCheck].lat = this.lat;
       this.attendance[typeCheck].lng = this.lng;
 
-      const respAdd = await addToCollection("attendance", this.attendance);
-
-      console.log(respAdd);
+      const respAdd = await addToCollection(
+        "attendance",
+        this.attendance,
+        this.idAttendance
+      );
 
       if (respAdd.status) {
         this.cameraRef = new Camera(this.$refs.videoCameraRef);
         await this.cameraRef.power(this.facingMode);
+      }
+
+      const respPending = await getPendingAttendance(this.userLogged.id);
+
+      if (respPending.status) {
+        console.log(respPending);
+
+        this.idAttendance =
+          respPending.data.data.check_out.url_photo ==
+          "https://www.some-page.com/bad_url.jpg"
+            ? respPending.data.id
+            : null;
+
+        this.attendance.check_in.url_photo =
+          respPending.data.data.check_in.url_photo;
+        this.attendance.check_in.date =
+          respPending.data.data.check_in.date.toDate();
+        this.attendance.check_in.lat = respPending.data.data.check_in.lat;
+        this.attendance.check_in.lng = respPending.data.data.check_in.lng;
+
+        this.attendance.check_out.url_photo =
+          respPending.data.data.check_out.url_photo;
+
+        if (respPending.data.data.check_out.date) {
+          this.attendance.check_out.date =
+            respPending.data.data.check_out.date.toDate();
+        }
+
+        this.attendance.check_out.lat = respPending.data.data.check_out.lat;
+        this.attendance.check_out.lng = respPending.data.data.check_out.lng;
+      } else {
+        this.idAttendance = null;
+        this.attendance.check_in = {
+          url_photo: ref("https://www.some-page.com/bad_url.jpg"),
+          lat: ref(""),
+          lng: ref(""),
+          date: ref(""),
+        };
+        this.attendance.check_out = {
+          url_photo: ref("https://www.some-page.com/bad_url.jpg"),
+          lat: ref(""),
+          lng: ref(""),
+          date: ref(""),
+        };
       }
 
       this.$noti(
@@ -208,9 +271,7 @@ export default {
       );
     });
 
-    const respPending = await getPendingAttendance(this.userLogged.employee.id);
-
-    console.log(respPending);
+    const respPending = await getPendingAttendance(this.userLogged.id);
 
     if (respPending.status) {
       this.idAttendance = respPending.data.id;
@@ -221,6 +282,26 @@ export default {
         respPending.data.data.check_in.date.toDate();
       this.attendance.check_in.lat = respPending.data.data.check_in.lat;
       this.attendance.check_in.lng = respPending.data.data.check_in.lng;
+
+      this.attendance.check_out.url_photo =
+        respPending.data.data.check_out.url_photo;
+      this.attendance.check_out.date =
+        respPending.data.data.check_out.date.toDate();
+      this.attendance.check_out.lat = respPending.data.data.check_out.lat;
+      this.attendance.check_out.lng = respPending.data.data.check_out.lng;
+    } else {
+      this.attendance.check_in = {
+        url_photo: ref("https://www.some-page.com/bad_url.jpg"),
+        lat: ref(""),
+        lng: ref(""),
+        date: ref(""),
+      };
+      this.attendance.check_out = {
+        url_photo: ref("https://www.some-page.com/bad_url.jpg"),
+        lat: ref(""),
+        lng: ref(""),
+        date: ref(""),
+      };
     }
 
     this.cameraRef = new Camera(this.$refs.videoCameraRef);

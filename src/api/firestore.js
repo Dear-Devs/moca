@@ -6,6 +6,8 @@ import {
   getDocs,
   query,
   where,
+  doc,
+  updateDoc,
 } from "firebase/firestore";
 import { response } from "./response.js";
 let responseJson = {};
@@ -13,12 +15,19 @@ let responseJson = {};
 const firestore = getFirestore(firebaseConnection);
 
 // General functions
-const addToCollection = async (collectionName, data) => {
+const addToCollection = async (collectionName, data, id) => {
   try {
     console.log(collectionName, data);
+    let docRef, flag;
 
-    const docRef = await addDoc(collection(firestore, collectionName), data);
-    const flag = docRef.id ? true : false;
+    if (id != null) {
+      const specificDocRef = doc(firestore, collectionName, id);
+      docRef = await updateDoc(specificDocRef, data);
+      flag = true;
+    } else {
+      docRef = await addDoc(collection(firestore, collectionName), data);
+      flag = docRef ? true : false;
+    }
 
     responseJson = response(flag ? 200 : 500, {
       status: flag,
@@ -40,20 +49,21 @@ const addToCollection = async (collectionName, data) => {
 // Specific functions
 const getPendingAttendance = async (employeeId) => {
   try {
-    let docRef = null;
+    const collectionRef = collection(firestore, "attendance");
 
-    const querySnapshot = await getDocs(
-      query(
-        collection(firestore, "attendance"),
-        where("check_out/url_photo", "==", "bad_url.jpg"),
-        where("employee_id", "==", employeeId)
-      )
+    // Create a query against the collection.
+    const q = query(
+      collectionRef,
+      where(
+        "check_out.url_photo",
+        "==",
+        "https://www.some-page.com/bad_url.jpg"
+      ),
+      where("employee_id", "==", employeeId)
     );
 
-    querySnapshot.forEach((doc) => {
-      docRef = doc;
-    });
-
+    const querySnapshot = await getDocs(q);
+    const docRef = querySnapshot.docs[0];
     const flag = docRef && docRef.id ? true : false;
 
     responseJson = response(flag ? 200 : 500, {
