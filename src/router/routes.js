@@ -9,7 +9,7 @@ const routes = [
       { path: "", component: () => import("pages/IndexPage.vue") },
       {
         path: "profile",
-        name: "profile",
+        name: "profile-employee",
         component: () => import("pages/ProfilePage.vue"),
       },
       {
@@ -28,17 +28,6 @@ const routes = [
         path: "attendance-list",
         name: "attendance-list",
         component: () => import("pages/AttendanceList.vue"),
-      },
-      {
-        path: "employees-list",
-        name: "employees-list",
-        component: () => import("pages/EmployeesList.vue"),
-      },
-
-      {
-        path: "attendance-detail",
-        name: "attendance-detail",
-        component: () => import("pages/AttendanceDetail.vue"),
       },
     ],
   },
@@ -61,26 +50,13 @@ const routes = [
         name: "edit-profile",
         component: () => import("pages/EditProfilePage.vue"),
       },
-
       {
-        path: "attendance-list",
-        name: "attendance-list",
-        component: () => import("pages/AttendanceList.vue"),
-      },
-      {
-        path: "employees-list",
-        name: "employees-list",
-        component: () => import("pages/EmployeesList.vue"),
-      },
-
-      {
-        path: "attendance-detail",
-        name: "attendance-detail",
-        component: () => import("pages/AttendanceDetail.vue"),
+        path: "attendance-company-list",
+        name: "attendance-company-list",
+        component: () => import("pages/AttendanceCompanyList.vue"),
       },
     ],
   },
-
 
   // Always leave this as last one,
   // but you can also remove it

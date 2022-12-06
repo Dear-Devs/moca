@@ -77,16 +77,10 @@ const linksList = [
     link: { name: "profile" },
   },
   {
-    title: "Lista de empleados",
+    title: "Company attendances",
     caption: "",
     icon: "groups",
-    link: { name: "employees-list" },
-  },
-  {
-    title: "Lista de asistencias",
-    caption: "",
-    icon: "format_list_bulleted",
-    link: { name: "attendance-list" },
+    link: { name: "attendance-company-list" },
   },
 ];
 
@@ -141,6 +135,13 @@ export default defineComponent({
       }
 
       this.initials = this.fullName.substring(0, 2);
+
+      const user = JSON.parse(sessionStorage.getItem("user"));
+      if (user) {
+        if (user.role.id == 3) {
+          this.$router.push("/");
+        }
+      }
     },
   },
   mounted() {

@@ -104,9 +104,9 @@ export default {
         first_surname: userLogged.first_surname,
         second_surname: userLogged.second_surname,
         employee_id: userLogged.employee.user_id,
-        // company: userLogged.company,
+        company: userLogged.company,
         // role: userLogged.role,
-        // employee: userLogged.employee,
+        employee: userLogged.employee,
         employee_status: userLogged.employeeStatus,
         check_in: {
           url_photo: ref("https://www.some-page.com/bad_url.jpg"),
@@ -202,8 +202,6 @@ export default {
       const respPending = await getPendingAttendance(this.userLogged.id);
 
       if (respPending.status) {
-        console.log(respPending);
-
         this.idAttendance =
           respPending.data.data.check_out.url_photo ==
           "https://www.some-page.com/bad_url.jpg"

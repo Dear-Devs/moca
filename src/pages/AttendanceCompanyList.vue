@@ -1,13 +1,37 @@
 <template>
   <q-page class="container">
     <div class="q-my-md">
-      <h4 class="text-center text-bold">Asistencias</h4>
+      <h4 class="text-center text-bold">Company attendances</h4>
     </div>
     <div class="q-px-md">
       <Datatable v-bind="datatableConfig">
         <template #item-data="props">
           <q-card>
-            <q-card-section class="text-h5">
+            <q-card-section class="">
+              <div class="row q-my-sm text-center">
+                <q-avatar
+                  class="absolute-center"
+                  size="80px"
+                  font-size="50"
+                  color="orange-13"
+                  text-color="white"
+                >
+                  {{ props.row.name.substring(0, 2) }}
+                </q-avatar>
+              </div>
+            </q-card-section>
+
+            <q-separator />
+
+            <q-card-section>
+              <div class="row q-my-sm text-center text-h6">
+                {{ props.row.name }} {{ props.row.first_surname
+                }}{{
+                  props.row.second_surname ? " " + props.row.second_surname : ""
+                }}
+                <br />
+                {{ props.row.employee.job }}
+              </div>
               <div class="row q-my-sm text-center">
                 <q-btn-group spread>
                   <q-btn
@@ -122,12 +146,6 @@
             <q-img :src="imgDialog" :ratio="4 / 3" style="max-width: 300px" />
           </div>
         </q-card-section>
-
-        <q-separator />
-
-        <q-card-actions class="absolute-bottom" align="right">
-          <q-btn flat label="Close" color="primary" v-close-popup />
-        </q-card-actions>
       </q-card>
     </q-dialog>
 
@@ -164,12 +182,6 @@
             ></div>
           </div>
         </q-card-section>
-
-        <q-separator />
-
-        <q-card-actions class="absolute-bottom" align="right">
-          <q-btn flat label="Close" color="primary" v-close-popup />
-        </q-card-actions>
       </q-card>
     </q-dialog>
   </q-page>
@@ -177,13 +189,13 @@
 
 <script>
 import { defineComponent, ref } from "vue";
-import { getMyAttendances } from "/src/api/firestore.js";
+import { getAllAttendances } from "/src/api/firestore.js";
 import Datatable from "/src/components/DataTable.vue";
 import { date } from "quasar";
 import { createMap } from "/src/api/OpenLayer.js";
 
 export default defineComponent({
-  name: "AttendanceList",
+  name: "AttendanceCompanyList",
 
   components: {
     Datatable,
@@ -198,8 +210,8 @@ export default defineComponent({
       dialogShowMap: ref(false),
       date,
       datatableConfig: {
-        functionRequest: getMyAttendances,
-        params: [userLogged.employee.user_id],
+        functionRequest: getAllAttendances,
+        params: [userLogged.company.id],
         title: "",
         grid: true,
         cols: [],
@@ -213,8 +225,9 @@ export default defineComponent({
       this.dialogShowImage = true;
     },
     showMap(lat, lng) {
-      navigator.geolocation.getCurrentPosition((position) => {});
-      const map = createMap(this.$refs.map, lat, lng);
+      navigator.geolocation.getCurrentPosition((position) => {
+        const map = createMap(this.$refs.map, lat, lng);
+      });
       this.dialogShowMap = true;
     },
   },

@@ -71,13 +71,19 @@ import { logout, userProfile } from "/src/api/auth.js";
 
 const linksList = [
   {
-    title: "Perfil",
+    title: "Profile",
     caption: "",
     icon: "account_box",
-    link: { name: "profile" },
+    link: { name: "profile-employee" },
   },
   {
-    title: "Checar entrada y salida",
+    title: "My attendances",
+    caption: "",
+    icon: "list_alt",
+    link: { name: "attendance-list" },
+  },
+  {
+    title: "Check in / Check out",
     caption: "",
     icon: "check",
     link: { name: "check-input-output" },
@@ -135,6 +141,13 @@ export default defineComponent({
       }
 
       this.initials = this.fullName.substring(0, 2);
+
+      const user = JSON.parse(sessionStorage.getItem("user"));
+      if (user) {
+        if (user.role.id == 2) {
+          this.$router.push("/admin");
+        }
+      }
     },
   },
   mounted() {
