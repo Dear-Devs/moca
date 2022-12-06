@@ -11,16 +11,17 @@ class Camera {
     return this._photo != null;
   }
 
-  async power() {
+  async power(facingMode) {
     this._photo = null;
 
+    if (!facingMode) facingMode = "environment";
     // Obten la camara del dispositivo
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: false,
       video: {
-        width: 300,
-        height: 300,
-        facingMode: "environment",
+        width: 350,
+        height: 350,
+        facingMode: { exact: facingMode },
       },
     });
 

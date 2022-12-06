@@ -138,6 +138,7 @@ export default defineComponent({
           }`;
 
           sessionStorage.setItem("name", this.fullName);
+          sessionStorage.setItem("user", JSON.stringify(res.data));
         } else {
           this.fullName = "Generic Name";
         }

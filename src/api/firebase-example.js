@@ -13,6 +13,7 @@ import {
   uploadString,
   getDownloadURL,
 } from "firebase/storage";
+import { getFirestore } from "firebase/firestore";
 import { response } from "./response.js";
 
 let responseJson = {};
