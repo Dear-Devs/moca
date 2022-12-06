@@ -3,7 +3,7 @@
     <q-header elevated class="bg-primary text-white">
       <q-toolbar>
         <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
-        <q-toolbar-title> MOCA </q-toolbar-title>
+        <q-toolbar-title> MOCA ADMINISTRADOR </q-toolbar-title>
       </q-toolbar>
     </q-header>
 
@@ -77,15 +77,21 @@ const linksList = [
     link: { name: "profile" },
   },
   {
-    title: "Checar entrada y salida",
+    title: "Lista de empleados",
     caption: "",
-    icon: "check",
-    link: { name: "check-input-output" },
+    icon: "groups",
+    link: { name: "employees-list" },
+  },
+  {
+    title: "Lista de asistencias",
+    caption: "",
+    icon: "format_list_bulleted",
+    link: { name: "attendance-list" },
   },
 ];
 
 export default defineComponent({
-  name: "MainLayout",
+  name: "AdminLayout",
 
   components: {
     EssentialLink,
